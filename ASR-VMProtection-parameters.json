@@ -1,0 +1,50 @@
+﻿{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "VaultName": {
+      "value": "vault5"
+    },
+    "ReplicationPolicyName": {
+      "value": "24-hour-retention-policy"
+    },
+    "VMName": {
+      "value": "vm01"
+    },
+    "VMRGName": {
+      "value": "test"
+    },
+    "VaultRGName": {
+      "value": "recoveryvault"
+    },
+    "CacheStorageRGName": {
+      "value": "test"
+    },
+    "RecoveryStorageRGName": {
+      "value": "mygroup-DR"
+    },
+    "RecoveryStorageName": {
+      "value": "mystorageaccountdr"
+    },
+    "CacheStorageName": {
+      "value": "mygroupdisks329cacheasr"
+    },
+    "DRLocation": {
+      "value": "CentralIndia"
+    },
+    "RecoveryRGName": {
+      "value": "mygroup-DR"
+    },
+    "SourceLocation": {
+      "value": "SouthIndia"
+    },
+    "vmdiskslist": {
+      "value": [
+        "http://a.blob.core.windows.net/vhds/VM01-OSDisk-01.vhd",
+        "http://a.blob.core.windows.net/vhds/VM01-DataDisk-0.vhd",
+        "http://a.blob.core.windows.net/vhds/VM01-DataDisk-1.vhd"
+      ]
+    }
+     
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "VMDiskslist": {
+      "type": "array",
+      "metadata": {
+        "description": "List of Vhd uri's to be protected"
+      }
+    },
+    "VaultName": {
+      "type": "string",
+      "metadata": {
+        "description": "ASR Vault Name"
+      }
+    },
+    "DRLocation": {
+      "type": "string",
+      "metadata": {
+        "description": "DR location"
+      }
+    },
+    "RecoveryRGName": {
+      "type": "string",
+      "metadata": {
+        "description": "RecoveryRGName"
+      }
+    },
+    "ReplicationPolicyName": {
+      "type": "string",
+      "metadata": {
+        "description": "Replication Policy Name"
+      }
+    },
+    "VMName": {
+      "type": "string",
+      "metadata": {
+        "description": "Virtual Machine Name"
+      }
+    },
+    "VMRGName": {
+      "type": "string",
+      "metadata": {
+        "description": "Virtual Machine ResourceGroup Name"
+      }
+    },
+    "VaultRGName": {
+      "type": "string",
+      "metadata": {
+        "description": "Vault ResourceGroup Name"
+      }
+    },
+    "CacheStorageRGName": {
+      "type": "string",
+      "metadata": {
+        "description": "Cache Storage Account ResourceGroup Name"
+      }
+    },
+    "RecoveryStorageRGName": {
+      "type": "string",
+      "metadata": {
+        "description": "Vault Storage Account ResourceGroup Name"
+      }
+    },
+    "RecoveryStorageName": {
+      "type": "string",
+      "metadata": {
+        "description": "Vault Storage Account Name"
+      }
+    },
+    "CacheStorageName": {
+      "type": "string",
+      "metadata": {
+        "description": "Cache Storage Account Name"
+      }
+    },
+    "SourceLocation": {
+      "type": "string",
+      "metadata": {
+        "description": "Source Location"
+      }
+    }
+
+
+  },
+  "variables": {
+
+    "fabricObjectId": "[resourceId(parameters('VMRGName'),'Microsoft.Compute/virtualMachines', parameters('VMName'))]",
+    "VaultId": "[resourceId('Microsoft.RecoveryServices/vaults', parameters('VaultName'))]",
+    "policyId": "[concat(variables('VaultId'), '/replicationPolicies/', parameters('ReplicationPolicyName'))]",
+    "primaryStagingAzureStorageAccountId": "[resourceId(parameters('CacheStorageRGName'),'Microsoft.Storage/storageAccounts', parameters('CacheStorageName'))]",
+    "RecoveryAzureStorageAccountId": "[resourceId(parameters('RecoveryStorageRGName'),'Microsoft.Storage/storageAccounts', parameters('RecoveryStorageName'))]",
+    "recoveryContainerId": "[concat(variables('VaultId'), '/replicationFabrics/asr-a2a-default-', parameters('DRLocation'), '/replicationProtectionContainers/asr-a2a-default-', parameters('DRLocation'), '-container')]",
+    "SubscriptionId": "[subscription().id]",
+    "recoveryResourceGroupId": "[concat(variables('SubscriptionId'), '/resourceGroups/', parameters('RecoveryRGName'))]",
+    "UniqueString": "[uniqueString(subscription().id, resourceGroup().id, Variables('fabricObjectId'))]",
+    "protectionVMname": "[concat(Parameters('Vaultname'), '/asr-a2a-default-', parameters('SourceLocation'), '/asr-a2a-default-', parameters('SourceLocation'),'-container/', variables('UniqueString'))]"
+  },
+    "resources": [
+      {
+        "type": "Microsoft.RecoveryServices/vaults/replicationFabrics/replicationProtectionContainers/replicationProtectedItems",
+        "name": "[Variables('protectionVMname')]",
+        "apiVersion": "2016-08-10",
+        "properties": {
+          "policyId": "[Variables('policyId')]",
+          "protectableItemId": "",
+          "providerSpecificDetails": {
+            "instanceType": "A2A",
+            "fabricObjectId": "[Variables('fabricObjectId')]",
+            "recoveryResourceGroupId": "[Variables('recoveryResourceGroupId')]",
+            "recoveryContainerId": "[Variables('recoveryContainerId')]",
+            "copy": [
+              {
+                "name": "vmDisks",
+                "Count": "[length(parameters('VMDiskslist'))]",
+                "Input": {
+                  "diskUri": "[parameters('VMDiskslist')[copyIndex('vmDisks')]]",
+                  "primaryStagingAzureStorageAccountId": "[Variables('primaryStagingAzureStorageAccountId')]",
+                  "recoveryAzureStorageAccountId": "[Variables('RecoveryAzureStorageAccountId')]"
+                }
+              }
+           
+            ],
+
+            "multiVmGroupName": ""
+          }
+        },
+        "dependsOn": [
+
+        ]
+      }
+    ],
+  "outputs": {
+  
+  }
+  }
